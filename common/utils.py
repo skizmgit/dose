@@ -79,3 +79,16 @@ def print_taken(dosebook: DoseBook):
 
 def print_remaining(dosebook: DoseBook):
     print(f"you have {calc.remaining(dosebook)} remaining")
+
+def print_line_banner():
+    print(('~' * 36) + ' dose v1 ' + ('~' * 36))
+
+def is_db_found():
+    if os.path.isdir(DOSEBOOKS_PATH):
+        for item in os.listdir(DOSEBOOKS_PATH):
+            full_path = os.path.join(DOSEBOOKS_PATH, item)
+            if os.path.isfile(full_path) and item.endswith('.db'):
+                return True
+        return False
+    else:
+        return False

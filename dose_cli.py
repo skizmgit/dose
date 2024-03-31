@@ -1,4 +1,4 @@
-from common import utils, calc
+from common import utils
 from common import command_functions as command
 from model.dosebook import DoseBook
 from model.medication import (
@@ -18,6 +18,7 @@ med_type: str
 route = Route.PO.name
 description: str
 qty: float
+new_flg: bool = False
 
 
 def main():
@@ -29,81 +30,100 @@ def main():
     global route
     global description
     global qty
-    print("~~~dose v1~~~")
+    global new_flg
+    utils.print_line_banner()
     while True:
         while utils.is_dosebook_empty(dosebook):
-            print("Would you like to load a dosebook or create new?"
-                  "\nDoseBooks:")
-            utils.list_dosebooks()
-            ui = input("type 'load <dosebook_name>' or 'new <dosebook_name>'\n"
-                       f"{PROMPT}")
-            if ui.startswith("load "):
-                _, filename = ui.split(maxsplit=1)
-                dosebook = utils.read_dosebook(filename + FILE_EXT)
-                dosebook_name = filename
-                command.print_dosebook(dosebook)
-            elif ui.startswith("new "):
-                _, db_name = ui.split(maxsplit=1)
-                medication_name = input("What is the name of the medication?"
-                                        f"\n{PROMPT}")
-                qty = utils.get_float(input(f"What quantity of "
-                                          f"{medication_name} do you have?"
-                                          f"\n{PROMPT}"))
-                list_medication_types()
-                med_type = input("Select a medication type from the list, "
-                                 "or enter a custom one\n"
-                                 f"{PROMPT}")
-                while not med_type:
+            if not utils.is_db_found():
+                utils.ensure_dosebook_dir_exists()
+                new_flg = True
+                db_name = input("Thank you for using dose app.\n"
+                                "Create new dosebook\n"
+                                "Enter dosebook name: ")
+            if not new_flg:
+                print("Would you like to load a dosebook or create new?"
+                      "\nDoseBooks:")
+                utils.list_dosebooks()
+                ui = input("type 'load <dosebook_name>' or 'new "
+                           "<dosebook_name>'\n"
+                           f"{PROMPT}")
+                if ui.startswith("load "):
+                    _, filename = ui.split(maxsplit=1)
+                    dosebook = utils.read_dosebook(filename + FILE_EXT)
+                    dosebook_name = filename
+                    command.print_dosebook(dosebook)
+                elif ui.startswith("new "):
+                    _, db_name = ui.split(maxsplit=1)
+                    utils.print_line_banner()
+                    medication_name = input("What is the name of the "
+                                            "medication?"
+                                            f"\n{PROMPT}")
+                    utils.print_line_banner()
+                    qty = utils.get_float(input(f"What quantity of "
+                                                f"{medication_name} do you have?"
+                                                f"\n{PROMPT}"))
+                    utils.print_line_banner()
+                    list_medication_types()
                     med_type = input("Select a medication type from the list, "
                                      "or enter a custom one\n"
                                      f"{PROMPT}")
-                strength = utils.get_float(input("Enter the strength of the "
-                                                 f"medicine in {med_type}"
-                                                 f"(s)\n{PROMPT}"))
-                list_medication_routes()
-                route = input("Select a route of administration from the list"
-                              f"\n{PROMPT}")
-                description = input("Provide a description/instructions\n"
+                    while not med_type:
+                        utils.print_line_banner()
+                        med_type = input("Select a medication type from the list, "
+                                         "or enter a custom one\n"
+                                         f"{PROMPT}")
+                    utils.print_line_banner()
+                    strength = utils.get_float(input("Enter the strength of the "
+                                                     f"medicine in {med_type}"
+                                                     f"(s)\n{PROMPT}"))
+                    utils.print_line_banner()
+                    list_medication_routes()
+                    route = input("Select a route of administration from the list"
+                                  f"\n{PROMPT}")
+                    utils.print_line_banner()
+                    description = input("Provide a description/instructions\n"
+                                        f"{PROMPT}")
+                    utils.print_line_banner()
+                    medication = Medication(medication_name, strength, med_type,
+                                            route, description, qty)
+                    confirm = input("Is this your medication?"
+                                    f"\n{medication}"
+                                    f"\n(Y/N)"
                                     f"{PROMPT}")
-                medication = Medication(medication_name, strength, med_type,
-                                        route, description, qty)
-                confirm = input("Is this your medication?"
-                                f"\n{medication}"
-                                f"\n(Y/N)"
-                                f"{PROMPT}")
-                if confirm.upper() == 'Y':
-                    dosebook = DoseBook(medication, [])
-                    dosebook_name = db_name
-                    utils.write_dosebook(dosebook, dosebook_name + FILE_EXT)
-            else:
-                print("Syntax error.  please try again.")
-
-        cmd = input(f"{PROMPT}")
-        if cmd == "quit" or cmd == "exit" or cmd == "x":
-            print("~~~dose v1~~~")
+                    utils.print_line_banner()
+                    if confirm.upper() == 'Y':
+                        dosebook = DoseBook(medication, [])
+                        dosebook_name = db_name
+                        utils.write_dosebook(dosebook, dosebook_name + FILE_EXT)
+                else:
+                    print("Syntax error.  please try again.")
+            utils.print_line_banner()
+        ui = input(f"{PROMPT}")
+        if ui == "quit" or ui == "exit" or ui == "x":
+            utils.print_line_banner()
             break
-        elif cmd.startswith("load "):
-            _, filename = cmd.split(maxsplit=1)
+        elif ui.startswith("load "):
+            _, filename = ui.split(maxsplit=1)
             dosebook = utils.read_dosebook(filename + FILE_EXT)
             dosebook_name = filename
-        elif cmd.startswith("save"):
+        elif ui.startswith("save"):
             utils.write_dosebook(dosebook, dosebook_name + FILE_EXT)
-        elif cmd.startswith("save "):
-            _, filename = cmd.split(maxsplit=1)
+        elif ui.startswith("save "):
+            _, filename = ui.split(maxsplit=1)
             utils.write_dosebook(dosebook, filename + FILE_EXT)
-        elif cmd.startswith("delete "):
-            _, filename = cmd.split(maxsplit=1)
+        elif ui.startswith("delete "):
+            _, filename = ui.split(maxsplit=1)
             utils.delete_dosebook(filename + FILE_EXT)
-        elif cmd.lower() == 'list':
+        elif ui.lower() == 'list':
             utils.list_dosebooks()
-        elif cmd.lower() == 'print':
+        elif ui.lower() == 'print':
             command.print_dosebook(dosebook)
-        elif cmd.lower() == 'dose':
+        elif ui.lower() == 'dose':
             command.log_dose(dosebook)
             utils.write_dosebook(dosebook, dosebook_name + FILE_EXT)
-        elif cmd.lower() == 'taken':
+        elif ui.lower() == 'taken':
             utils.print_taken(dosebook)
-        elif cmd.lower() == 'rem' or cmd.lower() == 'remaining':
+        elif ui.lower() == 'rem' or ui.lower() == 'remaining':
             utils.print_remaining(dosebook)
         else:
             dose_help()
