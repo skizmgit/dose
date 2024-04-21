@@ -1,6 +1,8 @@
 # dose v1
 Command line medication dosing manager
+
  Available Commands:
+
     - load <dosebook>: Load an existing dosebook from a file.
     - save: Save the current dosebook to a file.
     - save <filename>: Save the current dosebook to a new file.
