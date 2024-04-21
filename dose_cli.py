@@ -97,7 +97,7 @@ def main():
                         utils.write_dosebook(dosebook, dosebook_name + FILE_EXT)
                 else:
                     print("Syntax error.  please try again.")
-            utils.print_line_banner()
+        utils.print_line_banner()
         ui = input(f"{PROMPT}")
         if ui == "quit" or ui == "exit" or ui == "x":
             utils.print_line_banner()
